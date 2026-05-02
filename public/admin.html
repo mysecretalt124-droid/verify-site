@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Bulk Join</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #36393f;
+            color: #dcddde;
+        }
+        h1 {
+            color: #7289da;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            background: #40444b;
+            border: none;
+            color: #fff;
+        }
+        button {
+            padding: 10px 20px;
+            background: #7289da;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #5b6bbe;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #40444b;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #50555d;
+        }
+        th {
+            background: #484c54;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #484c54;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel - Bulk Server Join</h1>
+        <div class="form-group">
+            <label for="guildId">Target Server ID:</label>
+            <input type="text" id="guildId" placeholder="Enter Server ID">
+        </div>
+        <div class="form-group">
+            <label for="roleId">Role ID (optional):</label>
+            <input type="text" id="roleId" placeholder="Enter Role ID if applicable">
+        </div>
+        <button onclick="bulkJoin()">Force Join All Users to Server</button>
+        <div id="result" class="result"></div>
+        <h2>Authorized Users</h2>
+        <table id="usersTable">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Joined Guilds</th>
+                </tr>
+            </thead>
+            <tbody id="usersList"></tbody>
+        </table>
+    </div>
+
+    <script>
+        // Fetch and display authorized users
+        async function loadUsers() {
+            const res = await fetch('/api/users');
+            const users = await res.json();
+            const tbody = document.getElementById('usersList');
+            tbody.innerHTML = '';
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.joinedGuilds.join(', ') || 'None'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Bulk join users to a specified server
+        async function bulkJoin() {
+            const guildId = document.getElementById('guildId').value.trim();
+            const roleId = document.getElementById('roleId').value.trim();
+            const resultDiv = document.getElementById('result');
+
+            if (!guildId) {
+                resultDiv.innerHTML = '<p style="color: #ff5555;">Error: Server ID is required.</p>';
+                return;
+            }
+
+            const res = await fetch('/api/join-guild', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ guildId, roleId: roleId || '' }),
+            });
+
+            const data = await res.json();
+            let html = `<p>${data.message}</p><ul>`;
+            data.results.forEach(r => {
+                html += `<li>${r.username} (${r.id}): ${r.status}${r.error ? ' - ' + r.error : ''}</li>`;
+            });
+            html += '</ul>';
+            resultDiv.innerHTML = html;
+            loadUsers(); // Refresh the table
+        }
+
+        // Load users on page load
+        window.onload = loadUsers;
+    </script>
+</body>
+</html>

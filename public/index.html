@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 80px;
+            background: #36393f;
+            color: #dcddde;
+        }
+        h1 { color: #7289da; }
+        a {
+            display: inline-block;
+            padding: 14px 28px;
+            background: #7289da;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        a:hover { background: #5b6bbe; }
+    </style>
+</head>
+<body>
+    <h1>Server Verification</h1>
+    <p>Click the button below to verify and join the server.</p>
+    
+    <a href="https://discord.com/oauth2/authorize?client_id=1500134616961519626&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&scope=identify%20guilds.join">
+        Verify with Discord
+    </a>
+</body>
+</html>
