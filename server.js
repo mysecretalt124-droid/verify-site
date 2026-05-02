@@ -75,11 +75,16 @@ app.get('/callback', async (req, res) => {
                 grant_type: 'authorization_code',
                 code: code,
                 redirect_uri: process.env.REDIRECT_URI,
-                scope: 'identify guilds.join',
+           
             }),
         });
 
         const tokenData = await tokenRes.json();
+
+if (!tokenData.access_token) {
+    console.log("❌ TOKEN ERROR:", tokenData);
+    return res.send("OAuth failed - check logs");
+}
 
         const userRes = await fetch('https://discord.com/api/users/@me', {
             headers: { Authorization: `Bearer ${tokenData.access_token}` },
