@@ -159,10 +159,23 @@ app.post('/api/join-guild', async (req, res) => {
     const results = [];
 
     for (const user of authorizedUsers) {
-        if (user.joinedGuilds.includes(guildId)) {
-            results.push({ username: user.username, status: 'Already joined' });
-            continue;
-        }
+        // Skip broken users (important)
+if (!user.id) {
+    results.push({ username: "unknown", status: "❌ Invalid user (no ID)" });
+    continue;
+}
+
+// Check LIVE from Discord instead of your file
+const isInGuild = await fetch(`https://discord.com/api/guilds/${guildId}/members/${user.id}`, {
+    headers: {
+        Authorization: `Bot ${process.env.BOT_TOKEN}`
+    }
+}).then(r => r.status === 200);
+
+if (isInGuild) {
+    results.push({ username: user.username, status: 'Already in server' });
+    continue;
+}
 
         let tokenToUse = user.access_token;
 
@@ -188,7 +201,9 @@ app.post('/api/join-guild', async (req, res) => {
             const joinData = await joinRes.json().catch(() => ({}));
 
             if (joinRes.status === 201 || joinRes.status === 204) {
-                user.joinedGuilds.push(guildId);
+                if (!user.joinedGuilds.includes(guildId)) {
+    user.joinedGuilds.push(guildId);
+}
                 saveUsers();
                 results.push({ username: user.username, status: '✅ Success' });
             } else {
