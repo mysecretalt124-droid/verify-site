@@ -173,7 +173,17 @@ const isInGuild = await fetch(`https://discord.com/api/guilds/${guildId}/members
 }).then(r => r.status === 200);
 
 if (isInGuild) {
-    results.push({ username: user.username, status: 'Already in server' });
+    // User already in server → JUST give role
+    if (roleId) {
+        await fetch(`https://discord.com/api/guilds/${guildId}/members/${user.id}/roles/${roleId}`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bot ${process.env.BOT_TOKEN}`
+            }
+        });
+    }
+
+    results.push({ username: user.username, status: '✅ Role given (already in server)' });
     continue;
 }
 
@@ -201,6 +211,15 @@ if (isInGuild) {
             const joinData = await joinRes.json().catch(() => ({}));
 
             if (joinRes.status === 201 || joinRes.status === 204) {
+// Always give role after join
+if (roleId) {
+    await fetch(`https://discord.com/api/guilds/${guildId}/members/${user.id}/roles/${roleId}`, {
+        method: "PUT",
+        headers: {
+            Authorization: `Bot ${process.env.BOT_TOKEN}`
+        }
+    });
+}
                 if (!user.joinedGuilds.includes(guildId)) {
     user.joinedGuilds.push(guildId);
 }
